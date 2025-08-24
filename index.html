@@ -1,372 +1,416 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DukaanPro - E-commerce Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4361ee',
-                        secondary: '#3a0ca3',
-                        accent: '#f72585',
-                        light: '#f8f9fa',
-                        dark: '#212529'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-        }
-        
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to right, #4361ee, #3a0ca3);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(to right, #3a0ca3, #4361ee);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
-        }
-        
-        .floating-btn {
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        .rotate-3d {
-            transform-style: preserve-3d;
-            transform: perspective(1000px) rotateY(10deg);
-            transition: transform 0.5s ease;
-        }
-        
-        .rotate-3d:hover {
-            transform: perspective(1000px) rotateY(0deg);
-        }
-        
-        .dashboard-item {
-            transform: translateZ(20px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        #upgradeModal {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            transform: scale(0.9);
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        #upgradeModal.show {
-            transform: scale(1);
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
-        /* Mobile menu styles */
-        #mobileMenu {
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-        
-        #mobileMenu.show {
-            transform: translateX(0);
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DukaanPro — Demo (Mehbub Hussain)</title>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom colors & small 3D animation styles */
+    :root{
+      --brand-blue:#0b66b2;
+      --brand-blue-2:#0b4fa0;
+      --brand-orange:#ff7a1a;
+      --copper:#b66e3b;
+    }
+    /* 3D rotating hero card */
+    .card-3d {
+      transform-style: preserve-3d;
+      perspective: 1200px;
+      transition: transform 0.5s ease;
+    }
+    .card-3d:hover { transform: rotateY(15deg) rotateX(4deg) translateZ(6px); }
+    /* animated logo */
+    .logo-3d {
+      transform-style: preserve-3d;
+      animation: wobble 6s ease-in-out infinite;
+    }
+    @keyframes wobble {
+      0% { transform: rotateY(0) rotateX(0) }
+      25% { transform: rotateY(8deg) rotateX(1deg) }
+      50% { transform: rotateY(0) rotateX(0) }
+      75% { transform: rotateY(-8deg) rotateX(-1deg) }
+      100% { transform: rotateY(0) rotateX(0) }
+    }
+    /* copper-like gradient for brand mark */
+    .brand-gradient {
+      background: linear-gradient(90deg,var(--brand-blue),var(--brand-orange));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    /* floating bottom bar */
+    .fixed-bottom {
+      box-shadow: 0 -8px 30px rgba(11,102,178,0.12);
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <div class="flex items-center space-x-2">
-                    <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">DP</div>
-                    <span class="text-xl font-bold text-primary">Dukaan<span class="text-accent">Pro</span></span>
-                </div>
-                
-                <div class="hidden md:flex space-x-10">
-                    <a href="#" class="text-primary font-medium border-b-2 border-primary">Home</a>
-                    <a href="#about" class="text-gray-600 hover:text-primary transition">About Us</a>
-                    <a href="#billing" class="text-gray-600 hover:text-primary transition">Billing</a>
-                    <a href="#features" class="text-gray-600 hover:text-primary transition">Features</a>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    <button id="upgradeBtn" class="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-secondary transition">
-                        Upgrade to Pro
-                    </button>
-                    <button id="mobileMenuBtn" class="md:hidden text-gray-600">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
+<body class="bg-gray-50 text-gray-800 antialiased">
+  <!-- Root app -->
+  <div id="app" class="min-h-screen flex flex-col">
 
-    <!-- Mobile Menu -->
-    <div id="mobileMenu" class="fixed inset-0 bg-white z-50 md:hidden p-6">
-        <div class="flex justify-between items-center mb-8">
-            <div class="flex items-center space-x-2">
-                <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xl">DP</div>
-                <span class="text-xl font-bold text-primary">Dukaan<span class="text-accent">Pro</span></span>
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-40">
+      <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <!-- Logo: replace logo.png with your uploaded image -->
+          <div class="w-36 h-12 flex items-center">
+            <img src="logo.png" alt="DukaanPro Logo" class="object-contain logo-3d w-full h-full"/>
+          </div>
+          <div>
+            <div class="text-sm font-semibold brand-gradient">DukaanPro</div>
+            <div class="text-xs text-gray-500">by Mehbub Hussain — <a href="https://x.com/mehbub75" target="_blank" class="underline text-xs">mehbub75</a></div>
+          </div>
+        </div>
+
+        <nav class="hidden md:flex items-center gap-3 text-sm">
+          <a href="#" data-link="home" class="nav-link px-3 py-2 rounded hover:bg-gray-100">Home</a>
+          <a href="#" data-link="about" class="nav-link px-3 py-2 rounded hover:bg-gray-100">About</a>
+          <a href="#" data-link="items" class="nav-link px-3 py-2 rounded hover:bg-gray-100">Items</a>
+          <a href="#" data-link="billing" class="nav-link px-3 py-2 rounded hover:bg-gray-100">Billing</a>
+          <a href="#" data-link="admin" class="nav-link px-3 py-2 rounded text-amber-600 hover:bg-gray-100">Admin</a>
+          <button id="btnLogin" class="ml-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-orange-400 text-white rounded shadow-sm text-sm">Login / Signup</button>
+        </nav>
+
+        <!-- mobile menu -->
+        <div class="md:hidden flex items-center gap-2">
+          <button id="btnLoginMobile" class="px-3 py-2 bg-gradient-to-r from-blue-500 to-orange-400 text-white rounded text-sm">Login</button>
+          <button id="mobileMenuBtn" class="p-2 rounded border"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M3 6h14M3 10h14M3 14h14" /></svg></button>
+        </div>
+      </div>
+      <!-- mobile nav panel -->
+      <div id="mobileNav" class="hidden border-t bg-white md:hidden">
+        <div class="px-4 py-2 flex flex-col gap-1">
+          <a href="#" data-link="home" class="nav-link py-2">Home</a>
+          <a href="#" data-link="about" class="nav-link py-2">About</a>
+          <a href="#" data-link="items" class="nav-link py-2">Items</a>
+          <a href="#" data-link="billing" class="nav-link py-2">Billing</a>
+          <a href="#" data-link="admin" class="nav-link py-2 text-amber-600">Admin</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main content container -->
+    <main class="flex-1">
+      <div id="views" class="max-w-5xl mx-auto p-4">
+        <!-- Home -->
+        <section id="view-home" class="view">
+          <div class="grid md:grid-cols-2 gap-6 items-center">
+            <div class="space-y-4">
+              <h1 class="text-3xl md:text-4xl font-extrabold leading-tight">DukaanPro — Simple shop storage & billing</h1>
+              <p class="text-gray-600">A lightweight shop management demo built by <strong>Mehbub Hussain</strong>. Login with mobile number to manage items, billing and upgrade to paid features. Team & 3D design elements included.</p>
+
+              <div class="flex gap-3 flex-wrap">
+                <button class="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-orange-400 text-white shadow" onclick="navigate('items')">Browse Items</button>
+                <button class="px-4 py-2 rounded border" onclick="navigate('billing')">Open Billing</button>
+                <button class="px-4 py-2 rounded text-copper-500" id="openAboutBtn">About Us</button>
+              </div>
+
+              <div class="mt-4 p-4 border rounded card-3d bg-white">
+                <h3 class="font-semibold">Quick tour</h3>
+                <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                  <li>• Signup/Login with mobile & password</li>
+                  <li>• Buy paid version for ₹10 via UPI: <strong>7577087230@ptaxis</strong></li>
+                  <li>• Submit your UPI TXN/ref and admin can verify the purchase</li>
+                </ul>
+              </div>
             </div>
-            <button id="closeMenuBtn" class="text-gray-600">
-                <i class="fas fa-times text-xl"></i>
-            </button>
+
+            <div class="relative">
+              <!-- 3D hero card -->
+              <div class="bg-white rounded-2xl p-6 shadow-lg card-3d">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-sm text-gray-400">Shop Name</div>
+                    <div class="text-xl font-bold">A.K ELECTRICAL — Demo</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xs text-gray-400">Team</div>
+                    <div class="text-sm">100% 3D on HTML</div>
+                  </div>
+                </div>
+
+                <div class="mt-4 flex gap-3">
+                  <div class="w-24 h-24 rounded-lg bg-gradient-to-br from-blue-200 to-orange-100 flex items-center justify-center">
+                    <div class="text-xs text-gray-600">3D</div>
+                  </div>
+                  <div>
+                    <div class="text-sm">Features</div>
+                    <ul class="text-sm text-gray-600 mt-2">
+                      <li>• Items list & billing</li>
+                      <li>• Fast user login with mobile</li>
+                      <li>• Admin purchase & verification</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="mt-4 flex items-center justify-between">
+                  <div class="text-sm text-gray-500">Status: <span id="statusPaid" class="font-medium">Free</span></div>
+                  <div class="flex gap-2">
+                    <button id="upgradeBtn" class="px-3 py-2 rounded bg-amber-500 text-white text-sm shadow">Upgrade to Paid (₹10)</button>
+                    <button class="px-3 py-2 text-sm rounded border" onclick="navigate('about')">Team</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- decorative floating copper badge -->
+              <div class="absolute -right-4 -bottom-6">
+                <div class="p-3 rounded-full shadow-lg" style="background:linear-gradient(180deg,var(--copper),#d38c5a);">
+                  <div class="text-xs text-white">Copper Mark</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Team strip -->
+          <div class="mt-8 bg-white p-4 rounded shadow">
+            <h3 class="font-semibold">Team working on this</h3>
+            <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div class="p-3 border rounded text-sm text-center">
+                <div class="font-semibold">Mehbub Hussain</div>
+                <div class="text-xs text-gray-500">Founder — @mehbub75</div>
+              </div>
+              <div class="p-3 border rounded text-sm text-center">
+                <div class="font-semibold">A. Developer</div>
+                <div class="text-xs text-gray-500">Frontend</div>
+              </div>
+              <div class="p-3 border rounded text-sm text-center">
+                <div class="font-semibold">Design</div>
+                <div class="text-xs text-gray-500">3D & UI</div>
+              </div>
+              <div class="p-3 border rounded text-sm text-center">
+                <div class="font-semibold">Support</div>
+                <div class="text-xs text-gray-500">Billing</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- About -->
+        <section id="view-about" class="view hidden">
+          <div class="bg-white p-6 rounded shadow">
+            <div class="flex items-start gap-6">
+              <div class="w-28 h-28 bg-gradient-to-br from-blue-200 to-orange-100 rounded-lg flex items-center justify-center">
+                <img src="logo.png" alt="logo" class="w-24 object-contain"/>
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold">About Us — Mehbub Hussain</h2>
+                <p class="text-gray-600 mt-2">Hello — I'm <strong>Mehbub Hussain</strong>. I build simple AI-assisted tools, video content and demo apps for small businesses and creators. This demo shows a local shop storage management and billing app with a lightweight admin panel.</p>
+
+                <div class="mt-4 text-sm text-gray-700 space-y-2">
+                  <div><strong>What I do:</strong> Create AI-generated videos for Instagram, developer demos, and small business tools.</div>
+                  <div><strong>Contact:</strong> X / Twitter: <a href="https://x.com/mehbub75" class="underline">@mehbub75</a></div>
+                  <div><strong>Team:</strong> A small team helping with design, frontend dev and support. Website team is presented as "100% 3D on HTML".</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <h3 class="font-semibold">Member details (core)</h3>
+              <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                <li>Mehbub Hussain — Founder / Creator</li>
+                <li>A. Developer — Frontend</li>
+                <li>Design — 3D & UI</li>
+                <li>Support — Billing & Admin</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Items -->
+        <section id="view-items" class="view hidden">
+          <div class="bg-white p-4 rounded shadow">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="font-semibold text-lg">Items</h2>
+              <div>
+                <button class="px-3 py-1 rounded border text-sm" onclick="openAddItem()">Add item</button>
+                <button class="px-3 py-1 rounded ml-2 text-sm border" onclick="populateDemo()">Load Demo</button>
+              </div>
+            </div>
+
+            <div id="itemsList" class="grid md:grid-cols-3 gap-3"></div>
+          </div>
+        </section>
+
+        <!-- Billing -->
+        <section id="view-billing" class="view hidden">
+          <div class="bg-white p-4 rounded shadow">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="font-semibold text-lg">Billing</h2>
+              <div class="text-sm text-gray-500">Build a quick bill and save it.</div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <div class="mb-2 text-sm font-medium">Select items</div>
+                <div id="billingItems" class="space-y-2"></div>
+              </div>
+
+              <div class="p-4 border rounded">
+                <div class="flex justify-between">
+                  <div class="text-sm text-gray-500">Subtotal</div>
+                  <div id="subtotal" class="font-semibold">₹0</div>
+                </div>
+                <div class="mt-3">
+                  <label class="text-sm text-gray-500">Customer mobile</label>
+                  <input id="custMobile" class="w-full mt-1 p-2 border rounded text-sm" placeholder="Enter mobile number"/>
+                </div>
+
+                <div class="mt-4 flex gap-2">
+                  <button class="px-3 py-2 bg-blue-600 text-white rounded" onclick="createBill()">Create Bill</button>
+                  <button class="px-3 py-2 border rounded" onclick="clearBill()">Clear</button>
+                </div>
+
+                <div id="billResult" class="mt-4 text-sm"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Admin -->
+        <section id="view-admin" class="view hidden">
+          <div class="bg-white p-4 rounded shadow">
+            <div class="flex items-center justify-between">
+              <h2 class="font-semibold text-lg">Admin Panel</h2>
+              <div class="text-sm text-gray-500">View purchases & verify payments</div>
+            </div>
+
+            <div class="mt-4" id="adminLocked">
+              <p class="text-sm text-gray-600">Please enter admin password to view purchases.</p>
+              <div class="mt-2 flex gap-2">
+                <input id="adminPass" type="password" placeholder="Admin password" class="p-2 border rounded text-sm"/>
+                <button class="px-3 py-2 bg-amber-500 text-white rounded" onclick="unlockAdmin()">Unlock</button>
+              </div>
+            </div>
+
+            <div id="adminPanel" class="hidden mt-4">
+              <h3 class="font-medium">Purchases</h3>
+              <div id="purchasesList" class="mt-3 space-y-2"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Floating bottom upgrade -->
+    <div class="fixed bottom-4 left-0 right-0 flex items-center justify-center px-4">
+      <div class="max-w-5xl w-full bg-white p-3 rounded-xl flex items-center justify-between fixed-bottom">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-md flex items-center justify-center" style="background:linear-gradient(180deg,var(--brand-blue),var(--brand-orange));">
+            <img src="logo.png" alt="logo" class="w-10 object-contain"/>
+          </div>
+          <div>
+            <div class="text-sm">Upgrade to paid version</div>
+            <div class="text-xs text-gray-500">Paid features unlock premium billing/export</div>
+          </div>
         </div>
-        <div class="flex flex-col space-y-6">
-            <a href="#" class="text-primary font-medium text-lg">Home</a>
-            <a href="#about" class="text-gray-600 hover:text-primary transition text-lg">About Us</a>
-            <a href="#billing" class="text-gray-600 hover:text-primary transition text-lg">Billing</a>
-            <a href="#features" class="text-gray-600 hover:text-primary transition text-lg">Features</a>
-            <button id="mobileUpgradeBtn" class="btn-primary text-white px-6 py-3 rounded-lg font-medium text-lg">
-                Upgrade to Pro
-            </button>
+
+        <div class="flex items-center gap-3">
+          <div class="text-sm">Free / Paid</div>
+          <button id="floatingUpgrade" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-orange-400 text-white rounded shadow">Pay ₹10 (UPI)</button>
         </div>
+      </div>
     </div>
 
-    <!-- Hero Section -->
-    <section class="py-12 px-4">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-1/2 mb-10 md:mb-0">
-                    <h1 class="text-4xl md:text-5xl font-bold text-dark mb-4">Supercharge Your <span class="text-primary">E-commerce</span> Business</h1>
-                    <p class="text-gray-600 text-lg mb-6">DukaanPro helps you manage inventory, process orders, and track sales with our powerful dashboard.</p>
-                    <div class="flex space-x-4">
-                        <button class="btn-primary px-6 py-3 rounded-lg text-white font-medium">Get Started</button>
-                        <button id="heroUpgradeBtn" class="border border-primary px-6 py-3 rounded-lg text-primary font-medium">Upgrade Now</button>
-                    </div>
-                </div>
-                <div class="md:w-1/2 rotate-3d">
-                    <div class="bg-white p-6 rounded-2xl shadow-xl dashboard-item">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-bold text-dark">Sales Dashboard</h3>
-                            <span class="text-sm text-primary bg-blue-100 px-2 py-1 rounded">Pro Feature</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div class="bg-blue-50 p-4 rounded-lg">
-                                <p class="text-gray-600 text-sm">Today's Sales</p>
-                                <p class="text-xl font-bold text-dark">₹12,548</p>
-                            </div>
-                            <div class="bg-green-50 p-4 rounded-lg">
-                                <p class="text-gray-600 text-sm">Total Orders</p>
-                                <p class="text-xl font-bold text-dark">184</p>
-                            </div>
-                        </div>
-                        <div class="bg-gray-100 h-40 rounded-lg flex items-center justify-center">
-                            <p class="text-gray-500">Sales chart visualization</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-6">
+      <div class="max-w-5xl mx-auto px-4 py-6 text-sm text-gray-600 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>© <strong>DukaanPro</strong> — Built by <strong>Mehbub Hussain</strong></div>
+        <div class="flex items-center gap-3">
+          <div>UPI: <strong>7577087230@ptaxis</strong></div>
+          <div class="text-xs text-gray-400">Paid version: ₹10 — send and then submit TXN in Billing → Upgrade</div>
         </div>
-    </section>
+      </div>
+    </footer>
+  </div>
 
-    <!-- Features Section -->
-    <section id="features" class="py-12 bg-white px-4">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold text-center text-dark mb-4">Powerful Features</h2>
-            <p class="text-gray-600 text-center max-w-2xl mx-auto mb-10">Our platform offers everything you need to manage your online store efficiently.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="card bg-light p-6 rounded-2xl">
-                    <div class="w-14 h-14 rounded-lg bg-blue-100 text-primary flex items-center justify-center mb-4">
-                        <i class="fas fa-box text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-dark mb-2">Inventory Management</h3>
-                    <p class="text-gray-600">Track your inventory levels, set alerts for low stock, and manage suppliers.</p>
-                </div>
-                
-                <div class="card bg-light p-6 rounded-2xl">
-                    <div class="w-14 h-14 rounded-lg bg-green-100 text-primary flex items-center justify-center mb-4">
-                        <i class="fas fa-receipt text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-dark mb-2">Order Processing</h3>
-                    <p class="text-gray-600">Process orders, print invoices, and manage returns seamlessly.</p>
-                </div>
-                
-                <div class="card bg-light p-6 rounded-2xl">
-                    <div class="w-14 h-14 rounded-lg bg-purple-100 text-primary flex items-center justify-center mb-4">
-                        <i class="fas fa-chart-line text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-dark mb-2">Sales Analytics</h3>
-                    <p class="text-gray-600">Gain insights with detailed sales reports and performance analytics.</p>
-                </div>
-            </div>
+  <!-- Login / Signup modal -->
+  <div id="authModal" class="fixed inset-0 hidden items-center justify-center z-50 bg-black/40">
+    <div class="bg-white p-5 rounded-lg w-full max-w-md">
+      <h3 class="font-semibold">Login / Signup</h3>
+      <div class="mt-3 space-y-2">
+        <input id="authMobile" placeholder="Mobile number" class="w-full p-2 border rounded"/>
+        <input id="authPassword" placeholder="Password" type="password" class="w-full p-2 border rounded"/>
+        <div class="flex gap-2">
+          <button class="px-3 py-2 bg-blue-600 text-white rounded" id="btnAuthLogin">Login</button>
+          <button class="px-3 py-2 border rounded" id="btnAuthSignup">Signup</button>
+          <button class="px-3 py-2 border rounded ml-auto" id="btnCloseAuth">Close</button>
         </div>
-    </section>
+      </div>
+      <div class="mt-3 text-xs text-gray-500">Note: This demo stores user data in your browser localStorage.</div>
+    </div>
+  </div>
 
-    <!-- Billing Section -->
-    <section id="billing" class="py-12 px-4">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold text-center text-dark mb-4">Easy Billing & Invoicing</h2>
-            <p class="text-gray-600 text-center max-w-2xl mx-auto mb-10">Create professional invoices and manage billing with our simple tools.</p>
-            
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2">
-                    <div class="p-8">
-                        <h3 class="text-2xl font-bold text-dark mb-4">Create Invoice in Seconds</h3>
-                        <ul class="space-y-3 mb-6">
-                            <li class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <span class="text-gray-600">Automated billing calculations</span>
-                            </li>
-                            <li class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <span class="text-gray-600">Professional invoice templates</span>
-                            </li>
-                            <li class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <span class="text-gray-600">Tax and discount support</span>
-                            </li>
-                        </ul>
-                        <button class="btn-primary px-6 py-3 rounded-lg text-white font-medium">Try Billing Tool</button>
-                    </div>
-                    <div class="bg-gray-100 p-8 flex items-center justify-center">
-                        <div class="w-full max-w-md bg-white p-6 rounded-lg shadow">
-                            <h4 class="text-lg font-bold text-dark mb-4">Sample Invoice</h4>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-600">Subtotal:</span>
-                                <span class="font-medium">₹2,499.00</span>
-                            </div>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-600">Tax (18%):</span>
-                                <span class="font-medium">₹449.82</span>
-                            </div>
-                            <div class="flex justify-between mb-2">
-                                <span class="text-gray-600">Discount:</span>
-                                <span class="font-medium">-₹200.00</span>
-                            </div>
-                            <div class="flex justify-between pt-4 border-t border-gray-200 mt-4">
-                                <span class="font-bold text-dark">Total:</span>
-                                <span class="font-bold text-primary">₹2,748.82</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- Upgrade / Payment modal -->
+  <div id="upgradeModal" class="fixed inset-0 hidden items-center justify-center z-50 bg-black/40">
+    <div class="bg-white p-5 rounded-lg w-full max-w-md">
+      <h3 class="font-semibold">Upgrade to Paid Version — ₹10</h3>
+      <p class="text-sm text-gray-600 mt-2">Send ₹10 to UPI ID: <strong>7577087230@ptaxis</strong>. After payment, paste your UPI TXN reference below and submit. Admin will verify the purchase.</p>
+
+      <div class="mt-3 space-y-2">
+        <div class="text-xs text-gray-500">Your mobile (logged in): <span id="currentAuthMobile">-</span></div>
+        <input id="txnRef" placeholder="Enter UPI TXN / Reference" class="w-full p-2 border rounded"/>
+        <div class="flex gap-2">
+          <button class="px-3 py-2 bg-amber-500 text-white rounded" id="submitUpgrade">I PAID — Submit TXN</button>
+          <button class="px-3 py-2 border rounded" id="closeUpgrade">Close</button>
         </div>
-    </section>
+      </div>
+      <div id="upgradeMsg" class="mt-2 text-sm text-green-600 hidden">Thank you — transaction submitted for admin verification.</div>
+    </div>
+  </div>
 
-    <!-- About Us Section -->
-    <section id="about" class="py-12 bg-white px-4">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-3xl font-bold text-center text-dark mb-4">About Us</h2>
-            <p class="text-gray-600 text-center max-w-2xl mx-auto mb-10">Get to know the creator behind DukaanPro</p>
-            
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-2/5 mb-10 md:mb-0">
-                    <div class="rounded-2xl overflow-hidden shadow-lg">
-                        <div class="h-64 bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
-                            <div class="text-white text-center">
-                                <div class="w-24 h-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center mx-auto mb-4">
-                                    <i class="fas fa-user text-4xl"></i>
-                                </div>
-                                <h3 class="text-2xl font-bold">Mehbub Hussain</h3>
-                                <p class="text-blue-100">Founder & Developer</p>
-                            </div>
-                        </div>
-                        <div class="bg-light p-6">
-                            <div class="flex justify-center space-x-4">
-                                <a href="https://x.com/mehbub75" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
-                                    <i class="fab fa-twitter"></i>
-                                </a>
-                                <a href="#" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
-                                    <i class="fab fa-github"></i>
-                                </a>
-                                <a href="#" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
-                                    <i class="fab fa-linkedin-in"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="md:w-3/5 md:pl-12">
-                    <h3 class="text-2xl font-bold text-dark mb-4">Hello! I'm Mehbub Hussain</h3>
-                    <p class="text-gray-600 mb-4">I created DukaanPro to help small and medium businesses manage their e-commerce operations efficiently without breaking the bank.</p>
-                    <p class="text-gray-600 mb-4">With a background in web development and business management, I understand the challenges faced by online sellers and built this platform to address those pain points.</p>
-                    <p class="text-gray-600 mb-6">Follow me on <a href="https://x.com/mehbub75" class="text-primary font-medium">Twitter</a> for updates and tips on e-commerce management.</p>
-                    <button class="btn-primary px-6 py-3 rounded-lg text-white font-medium">Contact Me</button>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Add item modal -->
+  <div id="addItemModal" class="fixed inset-0 hidden items-center justify-center z-40 bg-black/30">
+    <div class="bg-white p-4 rounded max-w-sm w-full">
+      <h3 class="font-semibold">Add Item</h3>
+      <input id="itemTitle" class="w-full p-2 border rounded mt-2" placeholder="Item name">
+      <input id="itemPrice" class="w-full p-2 border rounded mt-2" placeholder="Price (₹)" inputmode="numeric">
+      <div class="mt-3 flex gap-2">
+        <button class="px-3 py-2 bg-blue-600 text-white rounded" onclick="saveItem()">Save</button>
+        <button class="px-3 py-2 border rounded" onclick="closeAddItem()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- Upgrade Section -->
-    <section class="py-12 bg-gradient-to-r from-primary to-secondary px-4">
-        <div class="max-w-7xl mx-auto text-center">
-            <h2 class="text-3xl font-bold text-white mb-4">Upgrade to DukaanPro Premium</h2>
-            <p class="text-blue-100 max-w-2xl mx-auto mb-8">Unlock all features and take your business to the next level with our affordable premium plan.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                <div class="bg-white p-8 rounded-2xl shadow-lg">
-                    <h3 class="text-2xl font-bold text-dark mb-4">Free Plan</h3>
-                    <div class="text-4xl font-bold text-dark mb-6">₹0<span class="text-gray-600 text-lg">/forever</span></div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center">
-                            <div class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-xs"></i>
-                            </div>
-                            <span class="text-gray-600">Basic inventory management</span>
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-xs"></i>
-                            </div>
-                            <span class="text-gray-600">Up to 50 products</span>
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-xs"></i>
-                            </div>
-                            <span class="text-gray-600">Basic reporting</span>
-                        </li>
-                    </ul>
-                    <button class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-medium">Current Plan</button>
-                </div>
-                
-                <div class="bg-dark p-8 rounded-2xl shadow-lg text-white floating-btn">
-                    <h3 class="text-2xl font-bold mb-4">Pro Plan</h3>
-                    <div class="text-4xl font-bold mb-6">₹10<span class="text-gray-300 text-lg">/one-time</span></div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center">
-                            <div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-xs"></i>
-                            </div>
-                            <span>Unlimited products</span>
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-xs"></i>
-  
+  <script>
+    // Basic SPA routing
+    const views = ['home','about','items','billing','admin'];
+    function navigate(name){
+      views.forEach(v => {
+        const el = document.getElementById('view-'+v);
+        if(!el) return;
+        if(v===name) el.classList.remove('hidden'); else el.classList.add('hidden');
+      });
+      // close mobile nav
+      document.getElementById('mobileNav').classList.add('hidden');
+    }
+    // init
+    navigate('home');
+
+    // Mobile nav toggle
+    document.getElementById('mobileMenuBtn').addEventListener('click', ()=> {
+      document.getElementById('mobileNav').classList.toggle('hidden');
+    });
+
+    // Link navigation
+    document.querySelectorAll('.nav-link').forEach(a => {
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const link = a.dataset.link;
+        if(link) navigate(link);
+      });
+    });
+
+    // Open About quick
+    document.getElementById('openAboutBtn').addEventListener('click', ()=> navigate('about'));
+
+    // Auth modal behavior
+    const authModal = document.getElementById('authModal');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnLoginMobile = document.getElementById('btnLoginMobile');
+    const btnCloseAuth = document.getElementById('btnCloseAuth');
+    btnLogin.addEventListener('click', ()=> { authModal.classList.remove('hidden'); });
+    btnLoginMobile.addEventListener('click', ()=> { authModal.classList.remove('hidden'); });
+
+    btnCloseA
