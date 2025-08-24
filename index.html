@@ -1,179 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DukaanPro - Pro Shop Manager</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.1/cdn.min.js" defer></script>
-  <style>
-    /* 3D card animation */
-    .card-3d {
-      perspective: 1000px;
-    }
-    .card-inner {
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-    }
-    .card-3d:hover .card-inner {
-      transform: rotateY(15deg) rotateX(10deg);
-    }
-    .card-front, .card-back {
-      backface-visibility: hidden;
-    }
-    .card-back {
-      transform: rotateY(180deg);
-    }
-
-    /* Smooth scroll */
-    html {
-      scroll-behavior: smooth;
-    }
-
-    /* Button hover glow */
-    .btn-glow:hover {
-      box-shadow: 0 0 20px rgba(255,165,0,0.7);
-      transform: scale(1.05);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DukaanPro - Pro Shop Manager</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.1/cdn.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta/dist/vanta.waves.min.js"></script>
+<style>
+  html, body { height:100%; margin:0; font-family:sans-serif; }
+  #vanta-bg { width:100%; height:100%; position:fixed; z-index:-1; top:0; left:0; }
+  .card-3d { perspective:1000px; }
+  .card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+  .card-3d:hover .card-inner { transform: rotateY(15deg) rotateX(10deg); }
+  .card-front, .card-back { backface-visibility:hidden; }
+  .card-back { transform:rotateY(180deg); }
+  .btn-glow:hover { box-shadow: 0 0 20px rgba(255,165,0,0.7); transform:scale(1.05); }
+  html { scroll-behavior: smooth; }
+</style>
 </head>
-<body class="bg-gray-50 text-gray-800" x-data="appData()">
+<body x-data="appData()">
 
-  <!-- Navbar -->
-  <nav class="bg-white shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+<!-- 3D Background -->
+<div id="vanta-bg"></div>
+
+<!-- Navbar -->
+<nav class="bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <img src="logo.png" alt="DukaanPro Logo" class="h-12 w-auto">
       <h1 class="text-2xl font-bold text-blue-700">DukaanPro</h1>
-      <button @click="mobileMenu = !mobileMenu" class="md:hidden text-gray-700 text-2xl">☰</button>
-      <ul class="hidden md:flex space-x-6 text-lg">
-        <li><a href="#home" class="hover:text-orange-500 transition">Home</a></li>
-        <li><a href="#items" class="hover:text-orange-500 transition">Items</a></li>
-        <li><a href="#billing" class="hover:text-orange-500 transition">Billing</a></li>
-        <li><a href="#about" class="hover:text-orange-500 transition">About Us</a></li>
-      </ul>
     </div>
-    <div x-show="mobileMenu" class="md:hidden bg-gray-50 border-t">
-      <ul class="flex flex-col p-4 space-y-3">
-        <li><a href="#home" class="hover:text-orange-500">Home</a></li>
-        <li><a href="#items" class="hover:text-orange-500">Items</a></li>
-        <li><a href="#billing" class="hover:text-orange-500">Billing</a></li>
-        <li><a href="#about" class="hover:text-orange-500">About Us</a></li>
-      </ul>
-    </div>
-  </nav>
+    <button @click="mobileMenu=!mobileMenu" class="md:hidden text-gray-700 text-2xl">☰</button>
+    <ul class="hidden md:flex space-x-6 text-lg">
+      <li><a href="#home" class="hover:text-orange-500 transition">Home</a></li>
+      <li><a href="#items" class="hover:text-orange-500 transition">Items</a></li>
+      <li><a @click.prevent="showAddModal=true" href="#" class="hover:text-orange-500 transition">Add Items</a></li>
+      <li><a href="#billing" class="hover:text-orange-500 transition">Billing</a></li>
+      <li><a href="#about" class="hover:text-orange-500 transition">About</a></li>
+    </ul>
+  </div>
+  <div x-show="mobileMenu" class="md:hidden bg-white/90 backdrop-blur p-4">
+    <ul class="flex flex-col space-y-3">
+      <li><a href="#home" class="hover:text-orange-500">Home</a></li>
+      <li><a href="#items" class="hover:text-orange-500">Items</a></li>
+      <li><a @click.prevent="showAddModal=true" href="#" class="hover:text-orange-500">Add Items</a></li>
+      <li><a href="#billing" class="hover:text-orange-500">Billing</a></li>
+      <li><a href="#about" class="hover:text-orange-500">About</a></li>
+    </ul>
+  </div>
+</nav>
 
-  <!-- Hero -->
-  <section id="home" class="h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-600 to-orange-500 text-white text-center p-6">
-    <h2 class="text-5xl md:text-6xl font-extrabold mb-4 animate-bounce">Welcome to DukaanPro</h2>
-    <p class="text-lg md:text-xl max-w-2xl mb-6">Smart shop management and billing for Indian shopkeepers.</p>
-    <button @click="activeTab='free'" class="mt-6 bg-white text-blue-600 px-8 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition btn-glow">Start Free</button>
-
-    <!-- 3D Hero Card -->
-    <div class="card-3d mt-12 w-72 md:w-96">
-      <div class="card-inner bg-white p-6 rounded-xl shadow-2xl card-front">
-        <h3 class="text-xl font-bold text-blue-700 mb-2">Manage Your Shop</h3>
-        <p class="text-gray-700">Add items, calculate billing, and keep track of sales easily.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Items Section -->
-  <section id="items" class="py-16 bg-gray-100">
-    <div class="max-w-6xl mx-auto px-4">
-      <h3 class="text-3xl font-bold mb-6 text-center">Available Items</h3>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <template x-for="item in items" :key="item.id">
-          <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2 card-3d">
-            <div class="card-inner">
-              <div class="card-front">
-                <h4 class="text-xl font-bold mb-2" x-text="item.name"></h4>
-                <p class="text-gray-700 text-lg">₹<span x-text="item.price"></span></p>
-              </div>
-            </div>
-          </div>
-        </template>
-        <template x-if="items.length===0">
-          <div class="col-span-full text-center text-gray-500">No items added yet</div>
-        </template>
-      </div>
-    </div>
-  </section>
-
-  <!-- Add Items Modal -->
-  <div x-show="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-8 w-11/12 max-w-md shadow-2xl relative">
-      <button @click="showAddModal=false" class="absolute top-3 right-3 text-gray-500 text-xl">&times;</button>
-      <h3 class="text-2xl font-bold mb-4">Add New Item</h3>
-      <form @submit.prevent="addItem" class="flex flex-col space-y-4">
-        <input type="text" placeholder="Item Name" x-model="newItem.name" class="border p-3 rounded w-full">
-        <input type="number" placeholder="Price" x-model="newItem.price" class="border p-3 rounded w-full">
-        <button type="submit" class="bg-blue-600 text-white px-4 py-3 rounded hover:bg-blue-700">Add Item</button>
-      </form>
+<!-- Hero -->
+<section id="home" class="h-screen flex flex-col items-center justify-center text-white text-center px-4">
+  <h2 class="text-5xl md:text-6xl font-extrabold mb-4 animate-bounce drop-shadow-lg">Welcome to DukaanPro</h2>
+  <p class="text-lg md:text-xl max-w-2xl mb-6 drop-shadow">Smart shop management and billing for Indian shopkeepers.</p>
+  <button @click="showAddModal=true" class="mt-6 bg-white text-blue-600 px-8 py-3 rounded-lg shadow-lg hover:bg-gray-100 transition btn-glow">Add Items</button>
+  <div class="card-3d mt-12 w-72 md:w-96">
+    <div class="card-inner bg-white p-6 rounded-xl shadow-2xl card-front">
+      <h3 class="text-xl font-bold text-blue-700 mb-2">Manage Your Shop</h3>
+      <p class="text-gray-700">Add items, calculate billing, and track sales easily.</p>
     </div>
   </div>
+</section>
 
-  <!-- Billing Section -->
-  <section id="billing" class="py-16">
-    <div class="max-w-6xl mx-auto px-4">
-      <h3 class="text-3xl font-bold mb-6 text-center">Billing</h3>
-      <div class="bg-white p-6 rounded-xl shadow-lg">
-        <ul class="divide-y">
-          <template x-for="item in items" :key="item.id">
-            <li class="py-2 flex justify-between text-lg">
-              <span x-text="item.name"></span>
-              <span>₹<span x-text="item.price"></span></span>
-            </li>
-          </template>
-        </ul>
-        <div class="mt-4 text-right font-bold text-xl">Total: ₹<span x-text="total"></span></div>
-      </div>
+<!-- Items Section -->
+<section id="items" class="py-16">
+  <div class="max-w-6xl mx-auto px-4">
+    <h3 class="text-3xl font-bold mb-6 text-center text-white drop-shadow">Available Items</h3>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <template x-for="item in items" :key="item.id">
+        <div class="bg-white/90 p-6 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2 card-3d">
+          <div class="card-inner">
+            <div class="card-front">
+              <h4 class="text-xl font-bold mb-2 text-blue-700" x-text="item.name"></h4>
+              <p class="text-gray-700 text-lg">₹<span x-text="item.price"></span></p>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template x-if="items.length===0">
+        <div class="col-span-full text-center text-white/70">No items added yet</div>
+      </template>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Pricing Section -->
-  <section class="py-16 bg-gradient-to-r from-orange-500 to-blue-600 text-white text-center px-4">
-    <h3 class="text-3xl font-bold mb-6">Upgrade to Pro</h3>
-    <p class="mb-6">Free version gives basic access. Unlock Pro features for just ₹10.</p>
-    <button @click="goPayment" class="bg-white text-orange-600 px-8 py-3 rounded-lg shadow-lg hover:bg-gray-100 btn-glow">Upgrade Now</button>
-    <p class="mt-4">Send ₹10 to UPI: <strong>7577087230@ptaxis</strong></p>
-  </section>
+<!-- Add Items Modal -->
+<div x-show="showAddModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-8 w-11/12 max-w-md shadow-2xl relative">
+    <button @click="showAddModal=false" class="absolute top-3 right-3 text-gray-500 text-xl">&times;</button>
+    <h3 class="text-2xl font-bold mb-4">Add New Item</h3>
+    <form @submit.prevent="addItem" class="flex flex-col space-y-4">
+      <input type="text" placeholder="Item Name" x-model="newItem.name" class="border p-3 rounded w-full">
+      <input type="number" placeholder="Price" x-model="newItem.price" class="border p-3 rounded w-full">
+      <button type="submit" class="bg-blue-600 text-white px-4 py-3 rounded hover:bg-blue-700">Add Item</button>
+    </form>
+  </div>
+</div>
 
-  <!-- About Section -->
-  <section id="about" class="py-16 bg-gray-100">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-      <h3 class="text-3xl font-bold mb-6">About Us</h3>
-      <p class="mb-4">Created by <strong>Mehbub Hussain</strong>. Passionate about building tools for Indian shopkeepers.</p>
-      <p>Follow me on X: <a href="https://x.com/mehbub75" target="_blank" class="text-blue-600 hover:underline">@mehbub75</a></p>
+<!-- Billing Section -->
+<section id="billing" class="py-16">
+  <div class="max-w-6xl mx-auto px-4">
+    <h3 class="text-3xl font-bold mb-6 text-center text-white drop-shadow">Billing</h3>
+    <div class="bg-white/90 p-6 rounded-xl shadow-lg">
+      <ul class="divide-y">
+        <template x-for="item in items" :key="item.id">
+          <li class="py-2 flex justify-between text-lg">
+            <span x-text="item.name"></span>
+            <span>₹<span x-text="item.price"></span></span>
+          </li>
+        </template>
+      </ul>
+      <div class="mt-4 text-right font-bold text-xl">Total: ₹<span x-text="total"></span></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Footer -->
-  <footer class="bg-blue-700 text-white py-4 text-center">
-    <p>&copy; 2025 DukaanPro. All rights reserved.</p>
-  </footer>
+<!-- Upgrade Modal -->
+<div x-show="showPaymentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-8 w-11/12 max-w-md shadow-2xl relative">
+    <button @click="showPaymentModal=false" class="absolute top-3 right-3 text-gray-500 text-xl">&times;</button>
+    <h3 class="text-2xl font-bold mb-4">Upgrade to Pro</h3>
+    <p class="mb-4">Unlock Pro features for just ₹10. Send to UPI: <strong>7577087230@ptaxis</strong></p>
+    <button class="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 w-full">I Paid</button>
+  </div>
+</div>
 
-  <!-- AlpineJS -->
-  <script>
-    function appData() {
-      return {
-        items: JSON.parse(localStorage.getItem('items') || '[]'),
-        newItem: {name:'',price:''},
-        showAddModal: false,
-        mobileMenu: false,
-        get total() { return this.items.reduce((sum,i)=>sum+Number(i.price),0); },
-        addItem() {
-          if(this.newItem.name && this.newItem.price){
-            this.items.push({id:Date.now(), ...this.newItem});
-            localStorage.setItem('items', JSON.stringify(this.items));
-            this.newItem={name:'',price:''};
-            this.showAddModal=false;
-          }
-        },
-        goPayment() {
-          window.open('payment.html', '_blank'); // Opens new payment page
+<!-- About Section -->
+<section id="about" class="py-16">
+  <div class="max-w-6xl mx-auto px-4 text-center">
+    <h3 class="text-3xl font-bold mb-6 text-white drop-shadow">About Us</h3>
+    <p class="mb-4 text-white drop-shadow">Created by <strong>Mehbub Hussain</strong>. Passionate about building tools for Indian shopkeepers.</p>
+    <p class="text-white drop-shadow">Follow me on X: <a href="https://x.com/mehbub75" target="_blank" class="text-blue-400 hover:underline">@mehbub75</a></p>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-blue-700 text-white py-4 text-center">
+  <p>&copy; 2025 DukaanPro. All rights reserved.</p>
+</footer>
+
+<!-- Scripts -->
+<script>
+  VANTA.WAVES({
+    el: "#vanta-bg",
+    mouseControls: true,
+    touchControls: true,
+    minHeight: 200.00,
+    minWidth: 200.00,
+    scale: 1.00,
+    scaleMobile: 1.00,
+    color: 0xffa500,
+    shininess: 50,
+    waveHeight: 20,
+    waveSpeed: 1
+  });
+
+  function appData() {
+    return {
+      items: JSON.parse(localStorage.getItem('items') || '[]'),
+      newItem: {name:'', price:''},
+      showAddModal: false,
+      showPaymentModal: false,
+      mobileMenu: false,
+      get total() { return this.items.reduce((sum,i)=>sum+Number(i.price),0); },
+      addItem() {
+        if(this.newItem.name && this.newItem.price){
+          this.items.push({id:Date.now(), ...this.newItem});
+          localStorage.setItem('items', JSON.stringify(this.items));
+          this.newItem={name:'', price:''};
+          this.showAddModal=false;
         }
       }
     }
-  </script>
+  }
+</script>
 
 </body>
-  </html>
+                                                                                                         </html>
