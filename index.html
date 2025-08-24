@@ -3,431 +3,413 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DukaanPro — Demo</title>
+  <title>DukaanPro — Home</title>
+
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind custom colors for brand (blue -> copper/orange)
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandBlue: '#0b63a8',
+            brandCopper: '#d97706', // copper-like
+            brandOrange: '#ff7a00',
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    /* Custom styles for 3D card and logo */
-    .logo-gradient {
-      background: linear-gradient(90deg,#0b63a3 0%, #ff7a00 60%, #b87333 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    .card-3d {
-      perspective: 1200px;
-    }
-    .card-inner {
+    /* Basic page background */
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    /* 3D cube styling for logo animation */
+    .scene { perspective: 1000px; }
+    .cube {
+      width: 220px; height: 220px;
       transform-style: preserve-3d;
-      transition: transform 0.9s cubic-bezier(.2,.9,.3,1);
+      transform: rotateX(-20deg) rotateY(20deg);
+      animation: spin 8s linear infinite;
     }
-    .card-3d:hover .card-inner {
-      transform: rotateY(18deg) rotateX(6deg) translateZ(6px) scale(1.02);
+    .cube__face {
+      position: absolute;
+      width: 220px; height: 220px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:34px; color:white;
+      border-radius:16px;
+      box-shadow: 0 8px 24px rgba(2,6,23,0.25);
     }
-    .card-face {
-      backface-visibility: hidden;
+    .cube__face--front  { transform: translateZ(110px); background:linear-gradient(180deg,#0b63a8,#0e76bd); }
+    .cube__face--back   { transform: rotateY(180deg) translateZ(110px); background:linear-gradient(180deg,#0e76bd,#0b63a8); }
+    .cube__face--right  { transform: rotateY(90deg) translateZ(110px); background:linear-gradient(180deg,#ff7a00,#d97706); }
+    .cube__face--left   { transform: rotateY(-90deg) translateZ(110px); background:linear-gradient(180deg,#d97706,#ff7a00); }
+    .cube__face--top    { transform: rotateX(90deg) translateZ(110px); background:linear-gradient(180deg,#0b63a8,#d97706); }
+    .cube__face--bottom { transform: rotateX(-90deg) translateZ(110px); background:linear-gradient(180deg,#d97706,#0b63a8); }
+    @keyframes spin { 0% { transform: rotateX(-20deg) rotateY(0deg);} 100% { transform: rotateX(-20deg) rotateY(360deg);} }
+
+    /* 3D team card tilt */
+    .tilt {
+      perspective: 600px;
     }
-    /* subtle copper text color for accent */
-    .text-copper { color: #b87333; }
-    /* small responsive tweaks */
-    @media (max-width: 640px) {
-      .nav-sm-hide { display:none; }
+    .tilt-card {
+      transform-style: preserve-3d;
+      transition: transform 0.25s ease;
+      will-change: transform;
+    }
+    .tilt-card:hover { transform: rotateX(8deg) rotateY(-8deg) translateZ(6px); }
+
+    /* small screens adjustments */
+    @media (max-width:640px) {
+      .cube { width:140px; height:140px; }
+      .cube__face { width:140px; height:140px; font-size:18px; border-radius:12px; }
     }
   </style>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+<body class="bg-gray-50 min-h-screen flex flex-col">
 
-  <!-- HEADER -->
-  <header class="bg-white shadow-sm sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- SVG logo with gradient -->
-        <a href="#" id="logoBtn" class="flex items-center gap-3" onclick="showSection('home')">
-          <svg width="160" height="44" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg" class="block">
-            <defs>
-              <linearGradient id="g1" x1="0" x2="1">
-                <stop offset="0" stop-color="#0b63a3"/>
-                <stop offset="0.55" stop-color="#ff7a00"/>
-                <stop offset="1" stop-color="#b87333"/>
-              </linearGradient>
-            </defs>
-            <text x="0" y="98" font-family="Inter, Arial, Helvetica, sans-serif" font-weight="700" font-size="80" fill="url(#g1)">Dukaan</text>
-            <g transform="translate(340,0)">
-              <rect x="120" y="18" rx="14" ry="14" width="160" height="100" fill="url(#g1)"></rect>
-              <text x="144" y="86" font-family="Inter, Arial, Helvetica, sans-serif" font-weight="700" font-size="72" fill="white">₹ro</text>
-            </g>
-          </svg>
-        </a>
-
-        <nav class="hidden md:flex gap-4 items-center nav-sm-hide">
-          <button class="text-sm hover:text-copper" onclick="showSection('home')">Home</button>
-          <button class="text-sm hover:text-copper" onclick="openNewPage('about')">About</button>
-          <button class="text-sm hover:text-copper" onclick="showSection('items')">Items</button>
-          <button class="text-sm hover:text-copper" onclick="showSection('billing')">Billing</button>
-        </nav>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <div id="userArea" class="flex items-center gap-2">
-          <button id="upgradeBtnTop" class="px-3 py-1 rounded-md bg-gradient-to-r from-[#0b63a3] to-[#ff7a00] text-white text-sm shadow-sm" onclick="openUpgradeModal()">Upgrade to Paid</button>
-          <button id="loginBtn" class="px-3 py-1 rounded-md border text-sm" onclick="openLoginModal()">Login</button>
+  <!-- NAVBAR -->
+  <header class="bg-white shadow sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-4">
+          <!-- Logo (text + copper icon) -->
+          <a href="#home" class="flex items-center gap-2">
+            <div class="w-10 h-10 rounded-md bg-gradient-to-br from-brandBlue to-brandCopper flex items-center justify-center shadow">
+              <!-- small copper icon resembling the logo style -->
+              <span class="text-white font-bold">D</span>
+            </div>
+            <span class="text-xl font-semibold text-brandBlue">Dukaan<span class="text-transparent bg-clip-text bg-gradient-to-r from-brandCopper to-brandOrange">Pro</span></span>
+          </a>
         </div>
 
-        <!-- mobile menu -->
-        <button class="md:hidden p-2" onclick="toggleMobileMenu()">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
+        <nav class="hidden md:flex items-center gap-4 text-sm">
+          <a href="#home" class="py-2 px-3 rounded hover:bg-gray-100">Home</a>
+          <a href="#about" class="py-2 px-3 rounded hover:bg-gray-100">About</a>
+          <a href="#items" class="py-2 px-3 rounded hover:bg-gray-100">Items</a>
+          <a href="#billing" class="py-2 px-3 rounded hover:bg-gray-100">Billing</a>
+          <button id="upgradeFloating" class="ml-3 py-2 px-3 rounded bg-gradient-to-r from-brandCopper to-brandOrange text-white shadow hover:opacity-90">Upgrade ₹10</button>
+        </nav>
+
+        <div class="md:hidden flex items-center gap-2">
+          <button id="mobileMenuBtn" class="p-2 rounded hover:bg-gray-100">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><path stroke="#0b63a8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- mobile nav -->
-    <div id="mobileMenu" class="md:hidden hidden border-t">
+    <div id="mobileNav" class="md:hidden hidden border-t">
       <div class="px-4 py-3 flex flex-col gap-2">
-        <button class="text-left" onclick="showSection('home'); toggleMobileMenu()">Home</button>
-        <button class="text-left" onclick="openNewPage('about'); toggleMobileMenu()">About</button>
-        <button class="text-left" onclick="showSection('items'); toggleMobileMenu()">Items</button>
-        <button class="text-left" onclick="showSection('billing'); toggleMobileMenu()">Billing</button>
+        <a href="#home" class="py-2 px-3 rounded hover:bg-gray-100">Home</a>
+        <a href="#about" class="py-2 px-3 rounded hover:bg-gray-100">About</a>
+        <a href="#items" class="py-2 px-3 rounded hover:bg-gray-100">Items</a>
+        <a href="#billing" class="py-2 px-3 rounded hover:bg-gray-100">Billing</a>
+        <button id="upgradeFloatingMobile" class="w-full py-2 px-3 rounded bg-gradient-to-r from-brandCopper to-brandOrange text-white shadow">Upgrade ₹10</button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN SPA SECTIONS -->
-  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+  <!-- MAIN CONTENT -->
+  <main id="app" class="flex-1 max-w-6xl mx-auto w-full px-4 py-8 sm:px-6 lg:px-8">
 
-    <!-- HOME -->
-    <section id="page-home" data-page="home" class="page">
-      <div class="grid md:grid-cols-2 gap-8 items-center">
-        <div>
-          <h1 class="text-4xl md:text-5xl font-bold leading-tight">
-            Sell fast, earn faster — <span class="logo-gradient">DukaanPro</span>
-          </h1>
-          <p class="mt-4 text-slate-600">A minimal demo for a mobile-friendly local shop interface. Manage items, billing, and upgrade to paid features. Built for Mehbub Hussain (<span class="font-medium">@mehbub75</span>).</p>
-
-          <div class="mt-6 flex gap-3">
-            <button class="px-4 py-2 rounded-md bg-gradient-to-r from-[#0b63a3] to-[#ff7a00] text-white shadow-sm" onclick="showSection('items')">Browse Items</button>
-            <button class="px-4 py-2 rounded-md border" onclick="openNewPage('about')">About Us</button>
-          </div>
-
-          <!-- quick features -->
-          <div class="mt-6 grid grid-cols-2 gap-3 text-sm">
-            <div class="bg-white p-3 rounded shadow-sm">
-              <div class="font-semibold">Mobile login</div>
-              <div class="text-slate-500">Login with mobile & password</div>
-            </div>
-            <div class="bg-white p-3 rounded shadow-sm">
-              <div class="font-semibold">3D showcase</div>
-              <div class="text-slate-500">Interactive product card</div>
-            </div>
-            <div class="bg-white p-3 rounded shadow-sm">
-              <div class="font-semibold">Billing & Cart</div>
-              <div class="text-slate-500">Cart, invoice & mock checkout</div>
-            </div>
-            <div class="bg-white p-3 rounded shadow-sm">
-              <div class="font-semibold">Paid Unlock</div>
-              <div class="text-slate-500">Send 10₹ via UPI to upgrade</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3D animated card -->
-        <div class="card-3d">
-          <div class="card-inner rounded-2xl shadow-xl bg-gradient-to-tr from-white to-slate-50 p-6 flex items-center gap-6 transform-gpu">
-            <div class="w-48 h-48 rounded-xl bg-white shadow-md flex items-center justify-center card-face">
-              <div class="w-40 h-40 rounded-lg p-4 transform-gpu" style="background: linear-gradient(135deg,#0b63a3,#ff7a00);">
-                <img src="" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;opacity:0.06;">
-                <div class="absolute inset-0 flex items-center justify-center text-white font-bold text-xl">DukaanPro</div>
-              </div>
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold">3D Product Showcase</h3>
-              <p class="mt-2 text-sm text-slate-600 max-w-sm">Hover the card to see a subtle 3D rotation. This area can be replaced with a product model or 3D embed in a production site.</p>
-              <div class="mt-4 flex gap-2">
-                <button class="px-3 py-1 rounded bg-white/60 border" onclick="addToCart('sample-product', 'Sample Product', 49)">Add to Cart — ₹49</button>
-                <button class="px-3 py-1 rounded border" onclick="showSection('billing')">Go to Billing</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ITEMS -->
-    <section id="page-items" data-page="items" class="page hidden">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-semibold">Items</h2>
-        <div class="flex items-center gap-2">
-          <button class="px-3 py-1 rounded border" onclick="clearCart()">Clear Cart</button>
-          <button class="px-3 py-1 rounded bg-gradient-to-r from-[#0b63a3] to-[#ff7a00] text-white" onclick="showSection('billing')">Open Billing</button>
-        </div>
-      </div>
-
-      <div id="itemsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- items are injected by JS -->
-      </div>
-    </section>
-
-    <!-- BILLING -->
-    <section id="page-billing" data-page="billing" class="page hidden">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-2xl font-semibold">Billing & Checkout</h2>
-        <div>
-          <span id="userBadge" class="text-sm text-slate-500"></span>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="md:col-span-2">
-          <div class="bg-white p-4 rounded shadow-sm">
-            <h3 class="font-medium">Cart Items</h3>
-            <div id="cartItems" class="mt-3 space-y-3">
-              <p class="text-sm text-slate-500">Your cart is empty.</p>
-            </div>
-          </div>
-
-          <div class="mt-4 bg-white p-4 rounded shadow-sm">
-            <h3 class="font-medium">Invoice</h3>
-            <div class="mt-3 text-sm" id="invoiceArea">
-              <p class="text-slate-500">No invoice yet.</p>
-            </div>
-            <div class="mt-4 flex gap-2">
-              <button class="px-4 py-2 rounded bg-gradient-to-r from-[#0b63a3] to-[#ff7a00] text-white" onclick="checkout()">Checkout</button>
-              <button class="px-4 py-2 rounded border" onclick="openUpgradeModal()">Upgrade to Paid (10₹)</button>
-            </div>
-          </div>
-        </div>
-
-        <aside>
-          <div class="bg-white p-4 rounded shadow-sm">
-            <h4 class="font-medium">Summary</h4>
-            <div class="mt-3 text-sm">
-              <div class="flex justify-between"><span>Subtotal</span><span id="subtotal">₹0</span></div>
-              <div class="flex justify-between"><span>Discount</span><span id="discount">₹0</span></div>
-              <div class="flex justify-between font-semibold text-lg mt-2"><span>Total</span><span id="total">₹0</span></div>
-            </div>
-
-            <div class="mt-4">
-              <button class="w-full px-4 py-2 rounded bg-copper-500 text-white" id="payButton" onclick="checkout()">Pay / Checkout</button>
-            </div>
-
-            <div class="mt-4 text-xs text-slate-500">
-              <p>Paid users get the paid features unlocked. To upgrade: send ₹10 to UPI <strong>7577087230@ptaxis</strong> and enter the transaction ID in the upgrade modal.</p>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </section>
-
-    <!-- ABOUT (this opens as a "new page" per your request) -->
-    <section id="page-about" data-page="about" class="page hidden">
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-semibold">About — DukaanPro</h2>
-        <div>
-          <button class="px-3 py-1 rounded border" onclick="showSection('home')">Back Home</button>
-        </div>
-      </div>
-
-      <div class="mt-4 bg-white p-6 rounded shadow-sm">
-        <div class="grid md:grid-cols-3 gap-6">
-          <div>
-            <div class="w-36 h-36 rounded-lg bg-gradient-to-tr from-[#0b63a3] to-[#ff7a00] flex items-center justify-center text-white font-bold text-lg">M</div>
-          </div>
-          <div class="md:col-span-2">
-            <h3 class="text-xl font-semibold">Mehbub Hussain</h3>
-            <p class="mt-2 text-slate-600">X: <a href="https://x.com/mehbub75" class="text-blue-600" target="_blank">@mehbub75</a></p>
-
-            <div class="mt-3 text-sm text-slate-700">
-              <p><strong>Who I am:</strong> Mehbub Hussain — creator of AI-generated short videos and crypto enthusiast. I run a YouTube channel (Mr.AirdropWala) and create content about airdrops and crypto tools. I build simple web tools and demo apps for local shops to manage inventory and billing.</p>
-              <p class="mt-2"><strong>What we do:</strong> We design easy-to-use shop management UIs, simple billing flows, and create content focused on crypto and AI-generated videos.</p>
-            </div>
-
-            <div class="mt-4">
-              <h4 class="font-medium">Core Team</h4>
-              <ul class="mt-2 text-sm space-y-1">
-                <li><strong>Mehbub Hussain</strong> — Founder & Creator</li>
-                <li><strong>Wania Zainab</strong> — Creative (family support)</li>
-                <li><strong>Design & Dev</strong> — In-house team (demo: 3D UI and web)</li>
-              </ul>
-            </div>
-
-            <div class="mt-4">
-              <h4 class="font-medium">Contact</h4>
-              <p class="text-sm text-slate-600">For quick demo or collaboration message on X: <a href="https://x.com/mehbub75" class="text-blue-600" target="_blank">@mehbub75</a></p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- ROUTED CONTENT WILL APPEAR HERE -->
+    <section id="page-content"></section>
 
   </main>
 
   <!-- FOOTER -->
   <footer class="bg-white border-t">
-    <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div class="text-sm text-slate-600">© <span id="year"></span> DukaanPro — Built for <strong>Mehbub Hussain</strong>.</div>
+    <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="text-sm text-gray-600">© <strong>DukaanPro</strong> — Team 100% 3D. Built by Mehbub Hussain (<a href="https://x.com/mehbub75" target="_blank" class="text-brandBlue underline">@mehbub75</a>).</div>
       <div class="flex items-center gap-3">
-        <span class="text-sm text-slate-500">Paid plan: ₹10</span>
-        <button class="px-3 py-1 rounded-md bg-gradient-to-r from-[#0b63a3] to-[#ff7a00] text-white" onclick="openUpgradeModal()">Upgrade Now</button>
-        <button class="px-3 py-1 rounded-md border" onclick="openLoginModal()">Login</button>
+        <button id="openLoginBottom" class="py-2 px-3 rounded border border-gray-200 hover:bg-gray-50">Login</button>
+        <button id="upgradeBottom" class="py-2 px-3 rounded bg-gradient-to-r from-brandCopper to-brandOrange text-white shadow">Upgrade — ₹10</button>
       </div>
     </div>
   </footer>
 
-  <!-- LOGIN MODAL -->
-  <div id="loginModal" class="fixed inset-0 hidden z-50 items-center justify-center bg-black/40">
-    <div class="bg-white rounded-lg w-11/12 max-w-md p-5 shadow-lg">
-      <h3 class="text-lg font-semibold">Login or Register</h3>
-      <p class="text-sm text-slate-500">Enter your mobile number and password. This demo stores data locally in your browser.</p>
+  <!-- TEMPLATES (JS will insert) -->
+  <template id="home-template">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <div class="space-y-6">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900">DukaanPro — Simple billing, items, and fast mobile login</h1>
+        <p class="text-gray-600">Small shop friendly — A.K ELECTRICAL in Vichingcha style. Free & Paid versions available. Paid unlocks premium features after UPI payment of ₹10.</p>
 
-      <div class="mt-4 space-y-3">
-        <input id="loginMobile" class="w-full border rounded px-3 py-2" placeholder="Mobile number (10 digits)" />
-        <input id="loginPassword" type="password" class="w-full border rounded px-3 py-2" placeholder="Password" />
-        <div class="flex gap-2">
-          <button class="flex-1 px-3 py-2 rounded bg-gradient-to-r from-[#0b63a3] to-[#ff7a00] text-white" onclick="handleLogin()">Login</button>
-          <button class="flex-1 px-3 py-2 rounded border" onclick="handleRegister()">Register</button>
+        <div class="flex gap-3">
+          <button id="btn-get-started" class="px-4 py-2 rounded bg-brandBlue text-white shadow">Get started</button>
+          <button id="btn-about" class="px-4 py-2 rounded border border-gray-200">About us</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-4 rounded-lg tilt bg-white shadow">
+            <div class="tilt-card p-4">
+              <h3 class="font-bold text-lg">Quick Items</h3>
+              <p class="text-sm text-gray-500">Add items, manage stock, generate quick bills.</p>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-lg bg-white shadow">
+            <h3 class="font-bold text-lg">Mobile friendly</h3>
+            <p class="text-sm text-gray-500">Login with phone number and password. Works on all devices.</p>
+          </div>
         </div>
       </div>
 
-      <div class="mt-4 text-right">
-        <button class="text-sm text-slate-500" onclick="closeLoginModal()">Close</button>
+      <div class="flex flex-col items-center gap-6">
+        <div class="scene">
+          <div class="cube" aria-hidden="true">
+            <div class="cube__face cube__face--front">Dukaan</div>
+            <div class="cube__face cube__face--back">Pro</div>
+            <div class="cube__face cube__face--right">₹</div>
+            <div class="cube__face cube__face--left">Mehbub</div>
+            <div class="cube__face cube__face--top">Team</div>
+            <div class="cube__face cube__face--bottom">100%</div>
+          </div>
+        </div>
+
+        <div class="w-full bg-white p-4 rounded-lg shadow">
+          <h3 class="font-semibold">Latest Billing Preview</h3>
+          <div id="billingPreview" class="mt-3 text-sm text-gray-600">No bills yet — login to create.</div>
+          <div class="mt-3">
+            <button id="go-to-billing" class="px-4 py-2 rounded bg-brandCopper text-white">Create Bill</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="about-template">
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row gap-6 items-start">
+        <div class="w-full sm:w-1/2 bg-white p-6 rounded-lg shadow">
+          <h2 class="text-2xl font-bold">About — Mehbub Hussain</h2>
+          <p class="text-sm text-gray-600 mt-2">Name: <strong>Mehbub Hussain</strong></p>
+          <p class="text-sm text-gray-600">X (Twitter): <a href="https://x.com/mehbub75" target="_blank" class="text-brandBlue underline">@mehbub75</a></p>
+          <p class="mt-3 text-gray-700">What I do: I run local shop promotions and build simple tools for small merchants — billing, items, and lightweight mobile-first store management. I also help promote local teams (HPL cricket) and brand design.</p>
+          <div class="mt-4">
+            <h4 class="font-semibold">Our Team</h4>
+            <p class="text-sm text-gray-600">Core team: Me (founder), 3D designer, frontend dev, support. All team visuals are presented in 3D cards below.</p>
+          </div>
+        </div>
+
+        <div class="w-full sm:w-1/2 grid grid-cols-1 gap-4">
+          <!-- 3D team cards -->
+          <div class="p-4 bg-white rounded-lg shadow tilt">
+            <div class="tilt-card p-4 flex items-center gap-4">
+              <div class="w-16 h-16 rounded-md bg-gradient-to-br from-brandBlue to-brandCopper flex items-center justify-center text-white font-bold">MH</div>
+              <div>
+                <div class="font-semibold">Mehbub Hussain</div>
+                <div class="text-sm text-gray-500">Founder & Builder — mobile-first tools for shops. @mehbub75</div>
+              </div>
+              <div class="ml-auto text-sm text-green-600">Lead</div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-white rounded-lg shadow tilt">
+            <div class="tilt-card p-4 flex items-center gap-4">
+              <div class="w-16 h-16 rounded-md bg-gradient-to-br from-brandCopper to-brandOrange flex items-center justify-center text-white font-bold">3D</div>
+              <div>
+                <div class="font-semibold">3D Designer</div>
+                <div class="text-sm text-gray-500">Creates 3D assets & brand visuals</div>
+              </div>
+              <div class="ml-auto text-sm text-gray-500">Contract</div>
+            </div>
+          </div>
+
+          <!-- Add more members as needed -->
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-lg shadow">
+        <h3 class="font-semibold">More about the product</h3>
+        <p class="text-sm text-gray-600 mt-2">Every page is responsive and the bottom upgrade/login actions work across pages. The 'Paid' plan costs ₹10 and unlocks premium features when marked paid in your account.</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="items-template">
+    <div class="space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold">Items & Inventory</h2>
+        <div>
+          <button id="addItemBtn" class="px-3 py-2 rounded bg-brandBlue text-white">Add Item</button>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-lg shadow">
+        <form id="itemForm" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <input name="name" class="border p-2 rounded" placeholder="Item name" required />
+          <input name="price" class="border p-2 rounded" placeholder="Price (₹)" type="number" required />
+          <input name="qty" class="border p-2 rounded" placeholder="Quantity" type="number" value="1" required />
+          <div class="sm:col-span-3 flex gap-2">
+            <button class="px-4 py-2 rounded bg-brandCopper text-white" type="submit">Save Item</button>
+            <button id="clearItems" type="button" class="px-4 py-2 rounded border">Clear All</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="itemsList" class="grid grid-cols-1 gap-3"></div>
+    </div>
+  </template>
+
+  <template id="billing-template">
+    <div class="space-y-4">
+      <h2 class="text-xl font-bold">Billing</h2>
+
+      <div class="bg-white p-4 rounded-lg shadow">
+        <form id="billForm" class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+          <input id="billCustomer" class="border p-2 rounded" placeholder="Customer name" />
+          <select id="billItem" class="border p-2 rounded"></select>
+          <input id="billQty" class="border p-2 rounded" type="number" value="1" min="1" />
+          <div class="flex gap-2">
+            <button class="px-4 py-2 rounded bg-brandBlue text-white" type="submit">Create Bill</button>
+            <button id="downloadInvoice" type="button" class="px-4 py-2 rounded border">Download</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="billsList" class="space-y-3"></div>
+    </div>
+  </template>
+
+  <!-- LOGIN / SIGNUP BOTTOM DRAWER -->
+  <div id="authDrawer" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center">
+    <div class="absolute inset-0 bg-black opacity-30" onclick="closeAuth()"></div>
+    <div class="bg-white rounded-t-lg sm:rounded-lg w-full sm:max-w-md p-6 relative z-10">
+      <button class="absolute right-3 top-3 text-gray-500" onclick="closeAuth()">✕</button>
+      <h3 class="text-lg font-semibold">Login / Sign up</h3>
+      <p class="text-sm text-gray-500">Use mobile number and password</p>
+
+      <form id="authForm" class="mt-4 space-y-3">
+        <input id="authName" class="w-full border p-2 rounded" placeholder="Full name (for signup)" />
+        <input id="authPhone" class="w-full border p-2 rounded" placeholder="Mobile number (e.g. 98xxxxxxxx)" />
+        <input id="authPassword" type="password" class="w-full border p-2 rounded" placeholder="Password" />
+        <div class="flex gap-2">
+          <button type="button" id="signupBtn" class="flex-1 px-4 py-2 rounded bg-brandCopper text-white">Sign up</button>
+          <button type="button" id="loginBtn" class="flex-1 px-4 py-2 rounded bg-brandBlue text-white">Login</button>
+        </div>
+        <div id="authMsg" class="text-sm text-red-500"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PAYMENT MODAL -->
+  <div id="payModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black opacity-40" onclick="closePay()"></div>
+    <div class="bg-white rounded-lg p-6 w-full max-w-md z-20">
+      <h3 class="font-semibold text-lg">Upgrade to Paid — ₹10</h3>
+      <p class="text-sm text-gray-600 mt-2">Send ₹10 to this UPI ID: <strong id="upiId">7577087230@ptaxis</strong></p>
+      <div class="mt-3 flex items-center gap-2">
+        <button id="copyUpi" class="px-3 py-2 rounded border">Copy UPI</button>
+        <button id="showQr" class="px-3 py-2 rounded border">Show QR (browser generated)</button>
+        <button id="confirmPaid" class="ml-auto px-3 py-2 rounded bg-brandCopper text-white">I PAID — Mark Paid</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-3">Note: UPI payment must be completed outside this page. Clicking "I PAID" will mark your account paid in the system.</p>
+    </div>
+  </div>
+
+  <!-- QR placeholder -->
+  <div id="qrModal" class="fixed inset-0 z-60 hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black opacity-40" onclick="closeQr()"></div>
+    <div class="bg-white p-4 rounded-lg z-20">
+      <h4 class="font-semibold">UPI QR</h4>
+      <div id="qrHolder" class="p-4"></div>
+      <div class="mt-3 text-sm text-gray-500">Scan this with UPI app and pay ₹10 to: <strong>7577087230@ptaxis</strong></div>
+      <div class="mt-3">
+        <button class="px-3 py-2 rounded border" onclick="closeQr()">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- UPGRADE MODAL -->
-  <div id="upgradeModal" class="fixed inset-0 hidden z-50 items-center justify-center bg-black/40">
-    <div class="bg-white rounded-lg w-11/12 max-w-md p-5 shadow-lg">
-      <h3 class="text-lg font-semibold">Upgrade to Paid — ₹10</h3>
-      <p class="text-sm text-slate-600 mt-2">To unlock paid features, send ₹10 via UPI to:</p>
-      <div class="mt-3 bg-slate-50 p-3 rounded">
-        <div class="font-medium">UPI ID</div>
-        <div class="text-lg font-semibold">7577087230@ptaxis</div>
-      </div>
+  <!-- Firebase & App Script -->
+  <script type="module">
+    // Firebase imports (modular)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, set, get, child, update, remove } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-      <p class="text-sm text-slate-500 mt-3">After sending the payment, paste your UPI transaction ID below and click <strong>Verify & Unlock</strong>. This demo does not verify payments with banks — it will accept any non-empty transaction ID and mark your account as paid locally.</p>
+    // Use the Firebase config you provided
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUT5V_mkiB1TKimC7YmSA0ynWR-mHiWPo",
+      authDomain: "dukaanpro-c6e15.firebaseapp.com",
+      databaseURL: "https://dukaanpro-c6e15-default-rtdb.firebaseio.com",
+      projectId: "dukaanpro-c6e15",
+      storageBucket: "dukaanpro-c6e15.firebasestorage.app",
+      messagingSenderId: "83452143524",
+      appId: "1:83452143524:web:00060d20636927bc970331"
+    };
 
-      <div class="mt-4 space-y-3">
-        <input id="txnId" class="w-full border rounded px-3 py-2" placeholder="Enter UPI transaction ID (from your bank/app)" />
-        <button class="w-full px-3 py-2 rounded bg-gradient-to-r from-[#0b63a3] to-[#ff7a00] text-white" onclick="verifyPayment()">Verify & Unlock</button>
-      </div>
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-      <div class="mt-4 text-right">
-        <button class="text-sm text-slate-500" onclick="closeUpgradeModal()">Close</button>
-      </div>
-    </div>
-  </div>
+    // --- Simple SPA routing
+    const routes = {
+      '#home': renderHome,
+      '#about': renderAbout,
+      '#items': renderItems,
+      '#billing': renderBilling
+    };
+    const pageContent = document.getElementById('page-content');
 
-  <!-- Simple in-page notifications -->
-  <div id="toast" class="fixed bottom-6 right-6 hidden bg-slate-900 text-white px-4 py-2 rounded shadow"></div>
-
-  <script>
-    // ---------- Demo data ----------
-    const items = [
-      { id: 'i1', title: 'Premium Tea 1kg', price: 49, desc: 'Fresh blend for local shops.' },
-      { id: 'i2', title: 'Instant Snacks Pack', price: 89, desc: 'Quick bite for customers.' },
-      { id: 'i3', title: 'Recharge Card', price: 199, desc: 'Mobile recharge top-up.' },
-      { id: 'i4', title: 'Cold Drink 500ml', price: 39, desc: 'Popular soft drink.' },
-      { id: 'i5', title: 'Grocery Combo', price: 249, desc: 'Handy grocery pack.' },
-      { id: 'i6', title: 'Cleaner Spray', price: 129, desc: 'Essential shop cleaner.' }
-    ];
-
-    // ---------- SPA and DOM helpers ----------
-    function showSection(page) {
-      document.querySelectorAll('.page').forEach(s => s.classList.add('hidden'));
-      const el = document.querySelector('[data-page="'+page+'"]');
-      if (el) el.classList.remove('hidden');
-
-      // update some UI states
-      if (page === 'billing') renderCart();
-      if (page === 'items') renderItems();
-      if (page === 'home') {}
-      window.scrollTo({top:0,behavior:'smooth'});
+    function navigate(hash) {
+      window.location.hash = hash;
+      const fn = routes[hash] || renderHome;
+      fn();
     }
 
-    function openNewPage(page) {
-      // The user requested that About opens as a "new page like this" - we simply show the About section.
-      showSection(page);
-    }
+    // show mobile nav toggle
+    const mobileBtn = document.getElementById('mobileMenuBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    mobileBtn.addEventListener('click', ()=> mobileNav.classList.toggle('hidden'));
 
-    function toggleMobileMenu() {
-      const mm = document.getElementById('mobileMenu');
-      mm.classList.toggle('hidden');
-    }
+    // Upgrades buttons open pay modal
+    document.getElementById('upgradeFloating').addEventListener('click', openPay);
+    document.getElementById('upgradeFloatingMobile').addEventListener('click', openPay);
+    document.getElementById('upgradeBottom').addEventListener('click', openPay);
 
-    // ---------- Cart & Billing ----------
-    function getCart() {
-      return JSON.parse(localStorage.getItem('dukaan_cart') || '[]');
-    }
-    function saveCart(cart) {
-      localStorage.setItem('dukaan_cart', JSON.stringify(cart));
-    }
-    function addToCart(id, title, price) {
-      const cart = getCart();
-      const found = cart.find(i=>i.id===id);
-      if (found) found.qty++;
-      else cart.push({ id, title, price, qty: 1 });
-      saveCart(cart);
-      showToast('Added to cart: ' + title);
-    }
-    function removeFromCart(id) {
-      let cart = getCart();
-      cart = cart.filter(i=>i.id!==id);
-      saveCart(cart);
-      renderCart();
-      showToast('Item removed');
-    }
-    function clearCart() {
-      localStorage.removeItem('dukaan_cart');
-      renderCart();
-      showToast('Cart cleared');
-    }
+    // login buttons
+    document.getElementById('openLoginBottom').addEventListener('click', openAuth);
 
-    function renderCart() {
-      const cart = getCart();
-      const cartEl = document.getElementById('cartItems');
-      if (!cartEl) return;
-      cartEl.innerHTML = '';
-      if (!cart.length) {
-        cartEl.innerHTML = '<p class="text-sm text-slate-500">Your cart is empty.</p>';
-      } else {
-        cart.forEach(ci=>{
-          const div = document.createElement('div');
-          div.className = 'flex items-center justify-between bg-slate-50 p-3 rounded';
-          div.innerHTML = `
-            <div>
-              <div class="font-medium">${ci.title}</div>
-              <div class="text-xs text-slate-500">₹${ci.price} × ${ci.qty}</div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button class="px-2 py-1 text-sm border rounded" onclick="decreaseQty('${ci.id}')">-</button>
-              <button class="px-2 py-1 text-sm border rounded" onclick="increaseQty('${ci.id}')">+</button>
-              <button class="px-2 py-1 text-sm border rounded" onclick="removeFromCart('${ci.id}')">Remove</button>
-            </div>
-          `;
-          cartEl.appendChild(div);
-        });
+    // copy UPI
+    document.getElementById('copyUpi').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText('7577087230@ptaxis');
+        alert('UPI copied to clipboard');
+      } catch (e) {
+        alert('Copy failed - 7577087230@ptaxis');
       }
-      updateInvoice();
-    }
+    });
 
-    function increaseQty(id) {
-      const cart = getCart();
-      const item = cart.find(i=>i.id===id);
-      if (item) item.qty++;
-      saveCart(cart);
-      renderCart();
-    }
-    function decreaseQty(id) {
-      const cart = getCart();
-      const item = cart.find(i=>i.id===id);
-      if (item) {
-        item.qty = Math.max(1, item.qty-1);
+    // Show QR — generate simple QR using chart.googleapis? No external allowed; use quick data URL QR via Google Chart API (works without CORS)
+    document.getElementById('showQr').addEventListener('click', () => {
+      const upi = encodeURIComponent('upi://pay?pa=7577087230@ptaxis&pn=DukaanPro&am=10&cu=INR');
+      const src = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${upi}`;
+      const holder = document.getElementById('qrHolder');
+      holder.innerHTML = `<img src="${src}" alt="UPI QR" class="w-64 h-64 object-contain" />`;
+      document.getElementById('qrModal').classList.remove('hidden');
+    });
+
+    document.getElementById('confirmPaid').addEventListener('click', async () => {
+      // mark current user as paid in Firebase
+      if (!currentUser) return alert('Please login first to mark your account paid.');
+      try {
+        await update(ref(db, `users/${currentUser.phone}`), { isPaid: true });
+        alert('Marked paid in account. Paid features unlocked.');
+        await refreshUserData();
+        closePay();
+      } catch (e) {
+        console.error(e); alert('Failed to mark paid: ' + e.message);
       }
-      saveCart(cart);
-      renderCart();
-    }
+    });
 
-    function updateInvoice() {
-      const cart = getCart();
-   
+    // Close/open modals
+    function openPay() { document.getElementById('payModal').classList.remove('hidden'); }
+    function closePay() { document.getElementById('payModal').classList.add('hidden'); }
+    function closeQr() { document.getElementById('qrModal').classList.add('hidden'); }
+    function openAuth() { document.getElementById('authDrawer').classList.remove('hidden'); }
+    function closeAuth() { document.getElementById('authDrawer').classList.add('hidden'); }
+
+    // auth logic (simple phone/pa
